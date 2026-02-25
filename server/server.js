@@ -2,14 +2,14 @@
    BASIC SETUP
 ===================================================== */
 
+require("dotenv").config();
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 const multer = require("multer");
 const Razorpay = require("razorpay");
-require("dotenv").config();
-mongoose.connect(process.env.MONGO_URI) // Loads environment variables from .env file
 
 const app = express();
 
@@ -17,32 +17,29 @@ const app = express();
    MIDDLEWARES
 ===================================================== */
 
-// Enable CORS so frontend can talk to backend
 app.use(cors());
-
-// Allow JSON data in request body
 app.use(express.json());
 
 /* =====================================================
-   RAZORPAY SETUP (SECURE WAY)
+   MONGODB CONNECTION (ATLAS ONLY)
 ===================================================== */
 
-// Never hardcode keys here
-// Put them inside .env file
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("✅ MongoDB Connected"))
+    .catch(err => console.log("❌ Mongo Error:", err));
 
-/* ==============================
+/* =====================================================
    RAZORPAY CONFIG
-============================== */
+===================================================== */
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID,
     key_secret: process.env.RAZORPAY_KEY_SECRET
 });
 
-
-/* ==============================
+/* =====================================================
    CREATE RAZORPAY ORDER
-============================== */
+===================================================== */
 
 app.post("/create-razorpay-order", async (req, res) => {
 
@@ -53,7 +50,7 @@ app.post("/create-razorpay-order", async (req, res) => {
         }
 
         const options = {
-            amount: Number(req.body.amount) * 100, // ₹ to paise
+            amount: Number(req.body.amount) * 100,
             currency: "INR",
             receipt: "order_" + Date.now()
         };
@@ -64,25 +61,14 @@ app.post("/create-razorpay-order", async (req, res) => {
 
     } catch (err) {
         console.error("❌ Razorpay Error:", err);
-        res.status(500).json({
-            error: "Razorpay Order Creation Failed"
-        });
+        res.status(500).json({ error: "Razorpay Order Creation Failed" });
     }
 });
-
-/* =====================================================
-   MONGODB CONNECTION
-===================================================== */
-
-mongoose.connect("mongodb://127.0.0.1:27017/mr_restaurant")
-.then(() => console.log("✅ MongoDB Connected"))
-.catch(err => console.log("❌ Mongo Error:", err));
 
 /* =====================================================
    MODELS
 ===================================================== */
 
-// Item Schema
 const ItemSchema = new mongoose.Schema({
     name: { type: String, required: true },
     price: { type: Number, required: true },
@@ -91,7 +77,6 @@ const ItemSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 
-// Order Schema
 const OrderSchema = new mongoose.Schema({
     customerName: String,
     phone: String,
@@ -107,7 +92,7 @@ const Item = mongoose.model("Item", ItemSchema);
 const Order = mongoose.model("Order", OrderSchema);
 
 /* =====================================================
-   FILE UPLOAD CONFIG (MULTER)
+   FILE UPLOAD (MULTER)
 ===================================================== */
 
 const storage = multer.diskStorage({
@@ -122,7 +107,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* =====================================================
-   ADMIN LOGIN (BASIC - IMPROVE LATER)
+   ADMIN LOGIN
 ===================================================== */
 
 const ADMIN_USERNAME = "mayank";
@@ -145,7 +130,9 @@ app.post("/admin/login", (req, res) => {
 
 // Add Item
 app.post("/add-item", upload.single("image"), async (req, res) => {
+
     try {
+
         const item = new Item({
             name: req.body.name,
             price: req.body.price,
@@ -195,8 +182,8 @@ app.delete("/delete-item/:id", async (req, res) => {
    ORDER ROUTES
 ===================================================== */
 
-// Save Order
 app.post("/order", async (req, res) => {
+
     try {
         const order = new Order(req.body);
         await order.save();
@@ -207,13 +194,11 @@ app.post("/order", async (req, res) => {
     }
 });
 
-// Get Orders
 app.get("/orders", async (req, res) => {
     const orders = await Order.find().sort({ createdAt: -1 });
     res.json(orders);
 });
 
-// Update Order Status
 app.put("/order-status/:id", async (req, res) => {
     await Order.findByIdAndUpdate(req.params.id, { status: "Delivered" });
     res.json({ message: "Status Updated" });
@@ -243,7 +228,7 @@ app.get("/admin/stats", async (req, res) => {
 });
 
 /* =====================================================
-   SERVE FRONTEND (MUST BE LAST)
+   SERVE FRONTEND (LAST)
 ===================================================== */
 
 app.use(express.static(path.join(__dirname, "../client")));
@@ -256,6 +241,8 @@ app.get("/*", (req, res) => {
    START SERVER
 ===================================================== */
 
-app.listen(5000, () => {
-    console.log("🚀 Server running on http://localhost:5000");
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
 });
