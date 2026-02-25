@@ -477,3 +477,145 @@ html {
 .online-btn:hover {
     background: #ea580c;
 }
+
+
+
+
+
+
+/* ===== NAVBAR RESPONSIVE ===== */
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.nav-links {
+    display: flex;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+        margin-top: 10px;
+        flex-wrap: wrap;
+    }
+
+    .order-btn {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+/* ===== HERO RESPONSIVE ===== */
+
+.hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    margin-top: 60px;
+}
+
+.hero-left {
+    flex: 1;
+}
+
+.hero-right {
+    flex: 1;
+    text-align: center;
+}
+
+.hero-right img {
+    width: 100%;
+    max-width: 400px;
+}
+
+@media (max-width: 992px) {
+    .hero {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .hero-left {
+        max-width: 100%;
+    }
+}
+
+/* ===== FOOD GRID ===== */
+
+.food-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 40px;
+}
+
+@media (max-width: 992px) {
+    .food-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .food-cards {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== CART RESPONSIVE ===== */
+
+.cart-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+@media (max-width: 600px) {
+    .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .qty-controls {
+        margin-top: 8px;
+    }
+}
+
+/* ===== ORDER FORM ===== */
+
+#orderForm input {
+    width: 100%;
+}
+
+.payment-options {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.payment-card {
+    flex: 1;
+    min-width: 200px;
+}
+
+.page-bg {
+    padding: 40px 20px;
+}
+
+@media (max-width: 600px) {
+    .main-card {
+        padding: 20px;
+    }
+}
+body {
+    overflow-x: hidden;
+}
