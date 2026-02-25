@@ -231,11 +231,14 @@ app.get("/admin/stats", async (req, res) => {
    SERVE FRONTEND (LAST)
 ===================================================== */
 
+
+const path = require("path");
+
 const clientPath = path.join(__dirname, "../client");
 
 app.use(express.static(clientPath));
 
-app.get("*", (req, res) => {
+app.get("/", (req, res) => {
     res.sendFile(path.join(clientPath, "index.html"));
 });
 /* =====================================================
