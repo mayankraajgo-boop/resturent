@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MR Restaurant</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="./css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+
+<body>
+
+<div class="page-bg">
+<div class="main-card">
+
+    <!-- NAVBAR -->
+    <nav class="navbar">
+        <div class="logo">MR Restaurant</div>
+
+        <ul class="nav-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#menu">Menu</a></li>
+            <li><a href="#cart">Cart</a></li>
+            <li><a href="#orderForm">Order</a></li>
+        </ul>
+
+        <div class="cart-icon" onclick="scrollToCart()">
+            🛒 <span id="cartCount">0</span>
+        </div>
+
+        <button class="order-btn" onclick="scrollToOrder()">Order Now</button>
+    </nav>
+
+
+    <!-- HERO -->
+    <section id="home" class="hero">
+        <div class="hero-left">
+            <h4 class="subtitle">Fresh & Delicious</h4>
+
+            <h1>
+                15 Minute only for <br>
+                authentic delicious food.
+            </h1>
+
+            <p>
+                Best quality dishes and fast delivery service.
+                Hot tasty food will reach you in just 20 minutes.
+            </p>
+
+            <a href="#menu" class="menu-btn">Menu →</a>
+        </div>
+
+        <div class="hero-right">
+            <img src="./images/img1.png" alt="Food Image">
+        </div>
+    </section>
+
+
+    <!-- 🔥 DYNAMIC FOOD CARDS -->
+   <section id="menu">
+    <div id="foodContainer" class="food-cards"></div>
+</section>
+
+
+    <!-- CART -->
+    <section id="cart" class="cart-section">
+        <h2>Your Cart</h2>
+
+        <div id="cartItems"></div>
+
+        <h3>Total: ₹ <span id="totalPrice">0</span></h3>
+
+        <button type="button" class="place-order-btn" onclick="openOrderForm()">
+            Place Order
+        </button>
+    </section>
+
+
+    <!-- ORDER FORM -->
+    <section id="orderForm" style="display:none; margin-top:40px;">
+        <h2>Enter Your Details</h2>
+
+        <input type="text" id="customerName" placeholder="Your Name">
+        <input type="text" id="customerPhone" placeholder="Phone Number">
+        <input type="text" id="customerAddress" placeholder="Delivery Address">
+
+        <button type="button" onclick="sendOrder()">Confirm Order</button>
+    </section>
+
+</div>
+</div>
+
+<script src="./js/script.js"></script>
+
+</body>
+</html>

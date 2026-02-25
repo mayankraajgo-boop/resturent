@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login - MR Restaurant</title>
+    <link rel="stylesheet" href="css/admin.css">
+</head>
+<body style="display:flex;justify-content:center;align-items:center;height:100vh;">
+
+<div style="background:#1e293b;padding:40px;border-radius:10px;width:300px;">
+    <h2 style="text-align:center;">Admin Login</h2>
+
+    <input type="text" id="username" placeholder="Username" style="width:100%;margin:10px 0;padding:8px;">
+    <input type="password" id="password" placeholder="Password" style="width:100%;margin:10px 0;padding:8px;">
+
+    <button onclick="login()" style="width:100%;padding:10px;background:#facc15;border:none;">
+        Login
+    </button>
+
+    <p id="error" style="color:red;text-align:center;"></p>
+</div>
+
+<script src="js/admin-login.js"></script>
+
+</body>
+</html>
