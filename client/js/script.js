@@ -1,3 +1,7 @@
+/* ===============================
+   GLOBAL VARIABLES
+=================================*/
+
 let cart = [];
 let total = 0;
 
@@ -6,7 +10,10 @@ let total = 0;
    LOAD ITEMS
 =================================*/
 
-window.addEventListener("DOMContentLoaded", loadItems);
+window.addEventListener("DOMContentLoaded", () => {
+    loadItems();
+    updateCartCount();
+});
 
 async function loadItems() {
 
@@ -32,6 +39,7 @@ async function loadItems() {
     });
 }
 
+
 /* ===============================
    CART LOGIC
 =================================*/
@@ -51,24 +59,32 @@ function addToCart(name, price) {
 
 function increaseQty(name) {
     let item = cart.find(p => p.name === name);
-    if (item) item.quantity++;
-    updateCart();
+    if (item) {
+        item.quantity++;
+        updateCart();
+    }
 }
 
 function decreaseQty(name) {
 
     let item = cart.find(p => p.name === name);
-
     if (!item) return;
 
     if (item.quantity > 1) {
         item.quantity--;
     } else {
-        cart = cart.filter(p => p.name !== name);
+        removeItem(name);
+        return;
     }
 
     updateCart();
 }
+
+function removeItem(name) {
+    cart = cart.filter(p => p.name !== name);
+    updateCart();
+}
+
 
 function updateCart() {
 
@@ -84,19 +100,47 @@ function updateCart() {
 
         cartDiv.innerHTML += `
             <div class="cart-item">
-                <strong>${item.name}</strong>
-                ₹${item.price} x ${item.quantity}
-                <button onclick="decreaseQty('${item.name}')">-</button>
-                <button onclick="increaseQty('${item.name}')">+</button>
+                <div>
+                    <strong>${item.name}</strong><br>
+                    ₹${item.price} x ${item.quantity}
+                </div>
+
+                <div class="qty-controls">
+                    <button onclick="decreaseQty('${item.name}')">-</button>
+                    <span>${item.quantity}</span>
+                    <button onclick="increaseQty('${item.name}')">+</button>
+                    <button class="remove-btn" onclick="removeItem('${item.name}')">❌</button>
+                </div>
             </div>
         `;
     });
 
-    document.getElementById("totalPrice").innerText = total;
+    const totalElement = document.getElementById("totalPrice");
+    if (totalElement) {
+        totalElement.innerText = total;
+    }
+
+    updateCartCount();
 }
 
+
+function updateCartCount() {
+
+    const countElement = document.getElementById("cartCount");
+    if (!countElement) return;
+
+    let totalItems = 0;
+
+    cart.forEach(item => {
+        totalItems += item.quantity;
+    });
+
+    countElement.innerText = totalItems;
+}
+
+
 /* ===============================
-   ORDER SUBMIT
+   ORDER SECTION
 =================================*/
 
 async function sendOrder() {
@@ -128,6 +172,8 @@ async function sendOrder() {
     cart = [];
     updateCart();
 }
+
+
 function openOrderForm() {
 
     if (cart.length === 0) {
@@ -139,6 +185,13 @@ function openOrderForm() {
     form.style.display = "block";
 
     form.scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+
+function scrollToCart() {
+    document.getElementById("cart").scrollIntoView({
         behavior: "smooth"
     });
 }
