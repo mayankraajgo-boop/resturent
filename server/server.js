@@ -8,7 +8,8 @@ const cors = require("cors");
 const path = require("path");
 const multer = require("multer");
 const Razorpay = require("razorpay");
-require("dotenv").config(); // Loads environment variables from .env file
+require("dotenv").config();
+mongoose.connect(process.env.MONGO_URI) // Loads environment variables from .env file
 
 const app = express();
 
