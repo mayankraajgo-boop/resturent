@@ -82,20 +82,60 @@
 
 
     <!-- ORDER FORM -->
-    <section id="orderForm" style="display:none; margin-top:40px;">
-        <h2>Enter Your Details</h2>
+ <!-- ================= ORDER FORM ================= -->
+<section id="orderForm" class="order-section" style="display:none; margin-top:40px;">
 
-        <input type="text" id="customerName" placeholder="Your Name">
+    <h2>Checkout</h2>
+
+    <!-- Customer Details -->
+    <div class="form-group">
+        <input type="text" id="customerName" placeholder="Full Name">
         <input type="text" id="customerPhone" placeholder="Phone Number">
         <input type="text" id="customerAddress" placeholder="Delivery Address">
+    </div>
 
-        <button type="button" onclick="sendOrder()">Confirm Order</button>
-    </section>
+    <!-- Payment Section -->
+    <div class="payment-box">
+
+        <h3>Select Payment Method</h3>
+
+        <div class="payment-options">
+
+            <!-- COD Option -->
+            <label class="payment-card">
+                <input type="radio" name="payment" value="COD" checked>
+                <div class="payment-content">
+                    <h4>Cash on Delivery</h4>
+                    <p>Pay when your order arrives</p>
+                </div>
+            </label>
+
+            <!-- Online Option -->
+            <label class="payment-card">
+                <input type="radio" name="payment" value="ONLINE">
+                <div class="payment-content">
+                    <h4>Pay Online</h4>
+                    <p>Secure payment via Razorpay</p>
+                </div>
+            </label>
+
+        </div>
+
+        <!-- Buttons -->
+        <div class="payment-buttons">
+            <button class="cod-btn" onclick="confirmCOD()">Confirm Order (COD)</button>
+            <button class="online-btn" onclick="payNow()">Pay Now</button>
+        </div>
+
+    </div>
+
+</section>
 
 </div>
 </div>
 
 <script src="./js/script.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 </body>
 </html>

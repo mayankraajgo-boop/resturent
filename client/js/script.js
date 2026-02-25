@@ -148,11 +148,51 @@ async function sendOrder() {
     let name = document.getElementById("customerName").value;
     let phone = document.getElementById("customerPhone").value;
     let address = document.getElementById("customerAddress").value;
+    let paymentMethod = document.querySelector('input[name="payment"]:checked').value;
 
     if (!name || !phone || !address) {
         alert("Fill all details");
         return;
     }
+
+    if (paymentMethod === "COD") {
+
+        await saveOrderToDB(name, phone, address, "COD");
+        alert("Order Placed Successfully (Cash on Delivery)");
+
+        return;
+    }
+
+    // ===== RAZORPAY FLOW =====
+
+    const res = await fetch("/create-razorpay-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: total })
+    });
+
+    const data = await res.json();
+
+    const options = {
+        key: "rzp_test_SKGrADd2eDINDu",
+        amount: data.amount,
+        currency: "INR",
+        name: "MR Restaurant",
+        description: "Food Order Payment",
+        order_id: data.id,
+        handler: async function (response) {
+
+            await saveOrderToDB(name, phone, address, "ONLINE");
+
+            alert("Payment Successful!");
+        }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+}
+
+async function saveOrderToDB(name, phone, address, paymentType) {
 
     await fetch("/order", {
         method: "POST",
@@ -163,11 +203,9 @@ async function sendOrder() {
             address: address,
             items: cart,
             total: total,
-            payment: "Cash"
+            payment: paymentType
         })
     });
-
-    alert("Order Placed Successfully!");
 
     cart = [];
     updateCart();
@@ -194,4 +232,105 @@ function scrollToCart() {
     document.getElementById("cart").scrollIntoView({
         behavior: "smooth"
     });
+}
+function payNow() {
+  fetch("/create-order", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ amount: 500 }),
+  })
+    .then(res => res.json())
+    .then(order => {
+      var options = {
+        key: "rzp_test_SKGrADd2eDINDu", // ONLY KEY ID
+        amount: order.amount,
+        currency: "INR",
+        order_id: order.id,
+        handler: function (response) {
+          alert("Payment Successful");
+        },
+      };
+
+      var rzp = new Razorpay(options);
+      rzp.open();
+    });
+}
+
+
+// ===== COD CONFIRM =====
+async function confirmCOD() {
+
+    let name = document.getElementById("customerName").value;
+    let phone = document.getElementById("customerPhone").value;
+    let address = document.getElementById("customerAddress").value;
+
+    if (!name || !phone || !address) {
+        alert("Please fill all details");
+        return;
+    }
+
+    await saveOrderToDB(name, phone, address, "COD");
+
+    alert("Order Placed Successfully (Cash on Delivery)");
+}
+
+
+// ===== RAZORPAY PAYMENT =====
+async function payNow() {
+
+    let name = document.getElementById("customerName").value;
+    let phone = document.getElementById("customerPhone").value;
+    let address = document.getElementById("customerAddress").value;
+
+    if (!name || !phone || !address) {
+        alert("Please fill all details");
+        return;
+    }
+
+    const res = await fetch("/create-razorpay-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: total })
+    });
+
+    const data = await res.json();
+
+    const options = {
+        key: "rzp_test_SKGrADd2eDINDu",
+        amount: data.amount,
+        currency: "INR",
+        name: "MR Restaurant",
+        description: "Food Order Payment",
+        order_id: data.id,
+        handler: async function (response) {
+
+            await saveOrderToDB(name, phone, address, "ONLINE");
+
+            alert("Payment Successful!");
+        }
+    };
+
+    const rzp = new Razorpay(options);
+    rzp.open();
+}
+
+
+// ===== Save Order Function =====
+async function saveOrderToDB(name, phone, address, paymentType) {
+
+    await fetch("/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            customerName: name,
+            phone: phone,
+            address: address,
+            items: cart,
+            total: total,
+            payment: paymentType
+        })
+    });
+
+    cart = [];
+    updateCart();
 }
