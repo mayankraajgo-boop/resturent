@@ -12,6 +12,28 @@
         html { scroll-behavior: smooth; }
     </style>
 </head>
+<!-- ORDER SUCCESS MODAL -->
+
+<div id="orderSuccessModal" class="success-modal">
+
+  <div class="success-box">
+
+    <h2>🎉 Order Placed Successfully!</h2>
+
+    <p>Your Order ID:</p>
+    <p id="successOrderId" class="order-id"></p>
+
+    <button onclick="copySuccessOrderId()">Copy Order ID</button>
+
+    <a id="whatsappBtn" target="_blank">
+        <button class="whatsapp-btn">WhatsApp Support</button>
+    </a>
+
+    <button onclick="closeSuccessModal()">Close</button>
+
+  </div>
+
+</div>
 
 <body>
 
@@ -26,7 +48,7 @@
             <li><a href="#home">Home</a></li>
             <li><a href="#menu">Menu</a></li>
             <li><a href="#cart">Cart</a></li>
-            <li><a href="#orderForm">Order</a></li>
+           <li><a href="#" onclick="openTrackOrder()">Track Order</a></li>
         </ul>
 
         <div class="cart-icon" onclick="scrollToCart()">
@@ -79,6 +101,7 @@
             Place Order
         </button>
     </section>
+   
 
 
     <!-- ORDER FORM -->
@@ -130,6 +153,25 @@
     </div>
 
 </section>
+<!-- ================= TRACK ORDER MODAL ================= -->
+
+<div id="trackModal" class="track-modal">
+
+    <div class="track-box">
+
+        <span class="close-btn" onclick="closeTrackOrder()">×</span>
+
+        <h2>Track Your Order</h2>
+
+        <input type="text" id="trackOrderId" placeholder="Enter Order ID">
+        <input type="text" id="trackPhone" placeholder="Enter Phone Number">
+
+        <button onclick="trackOrder()">Track Order</button>
+
+        <div id="trackResult"></div>
+
+    </div>
+</div>
 
 </div>
 </div>

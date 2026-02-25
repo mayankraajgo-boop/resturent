@@ -7,13 +7,18 @@ let total = 0;
 
 
 /* ===============================
-   LOAD ITEMS
+   INITIAL LOAD
 =================================*/
 
 window.addEventListener("DOMContentLoaded", () => {
     loadItems();
     updateCartCount();
 });
+
+
+/* ===============================
+   LOAD ITEMS
+=================================*/
 
 async function loadItems() {
 
@@ -59,10 +64,8 @@ function addToCart(name, price) {
 
 function increaseQty(name) {
     let item = cart.find(p => p.name === name);
-    if (item) {
-        item.quantity++;
-        updateCart();
-    }
+    if (item) item.quantity++;
+    updateCart();
 }
 
 function decreaseQty(name) {
@@ -84,7 +87,6 @@ function removeItem(name) {
     cart = cart.filter(p => p.name !== name);
     updateCart();
 }
-
 
 function updateCart() {
 
@@ -116,26 +118,18 @@ function updateCart() {
     });
 
     const totalElement = document.getElementById("totalPrice");
-    if (totalElement) {
-        totalElement.innerText = total;
-    }
+    if (totalElement) totalElement.innerText = total;
 
     updateCartCount();
 }
-
 
 function updateCartCount() {
 
     const countElement = document.getElementById("cartCount");
     if (!countElement) return;
 
-    let totalItems = 0;
-
-    cart.forEach(item => {
-        totalItems += item.quantity;
-    });
-
-    countElement.innerText = totalItems;
+    countElement.innerText =
+        cart.reduce((sum, item) => sum + item.quantity, 0);
 }
 
 
@@ -143,121 +137,6 @@ function updateCartCount() {
    ORDER SECTION
 =================================*/
 
-async function sendOrder() {
-
-    let name = document.getElementById("customerName").value;
-    let phone = document.getElementById("customerPhone").value;
-    let address = document.getElementById("customerAddress").value;
-    let paymentMethod = document.querySelector('input[name="payment"]:checked').value;
-
-    if (!name || !phone || !address) {
-        alert("Fill all details");
-        return;
-    }
-
-    if (paymentMethod === "COD") {
-
-        await saveOrderToDB(name, phone, address, "COD");
-        alert("Order Placed Successfully (Cash on Delivery)");
-
-        return;
-    }
-
-    // ===== RAZORPAY FLOW =====
-
-    const res = await fetch("/create-razorpay-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: total })
-    });
-
-    const data = await res.json();
-
-    const options = {
-        key: "rzp_test_SKGrADd2eDINDu",
-        amount: data.amount,
-        currency: "INR",
-        name: "MR Restaurant",
-        description: "Food Order Payment",
-        order_id: data.id,
-        handler: async function (response) {
-
-            await saveOrderToDB(name, phone, address, "ONLINE");
-
-            alert("Payment Successful!");
-        }
-    };
-
-    const rzp = new Razorpay(options);
-    rzp.open();
-}
-
-async function saveOrderToDB(name, phone, address, paymentType) {
-
-    await fetch("/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            customerName: name,
-            phone: phone,
-            address: address,
-            items: cart,
-            total: total,
-            payment: paymentType
-        })
-    });
-
-    cart = [];
-    updateCart();
-}
-
-
-function openOrderForm() {
-
-    if (cart.length === 0) {
-        alert("Cart is empty!");
-        return;
-    }
-
-    const form = document.getElementById("orderForm");
-    form.style.display = "block";
-
-    form.scrollIntoView({
-        behavior: "smooth"
-    });
-}
-
-
-function scrollToCart() {
-    document.getElementById("cart").scrollIntoView({
-        behavior: "smooth"
-    });
-}
-function payNow() {
-  fetch("/create-order", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ amount: 500 }),
-  })
-    .then(res => res.json())
-    .then(order => {
-      var options = {
-        key: "rzp_test_SKGrADd2eDINDu", // ONLY KEY ID
-        amount: order.amount,
-        currency: "INR",
-        order_id: order.id,
-        handler: function (response) {
-          alert("Payment Successful");
-        },
-      };
-
-      var rzp = new Razorpay(options);
-      rzp.open();
-    });
-}
-
-
-// ===== COD CONFIRM =====
 async function confirmCOD() {
 
     let name = document.getElementById("customerName").value;
@@ -269,13 +148,21 @@ async function confirmCOD() {
         return;
     }
 
-    await saveOrderToDB(name, phone, address, "COD");
+    const orderId = await saveOrderToDB(name, phone, address, "COD");
 
-    alert("Order Placed Successfully (Cash on Delivery)");
+    showSuccessModal(orderId);
+
+    cart = [];
+    updateCart();
+
+   
 }
 
 
-// ===== RAZORPAY PAYMENT =====
+/* ===============================
+   RAZORPAY PAYMENT
+=================================*/
+
 async function payNow() {
 
     let name = document.getElementById("customerName").value;
@@ -302,11 +189,16 @@ async function payNow() {
         name: "MR Restaurant",
         description: "Food Order Payment",
         order_id: data.id,
-        handler: async function (response) {
+        handler: async function () {
 
-            await saveOrderToDB(name, phone, address, "ONLINE");
+            const orderId = await saveOrderToDB(name, phone, address, "ONLINE");
 
-            alert("Payment Successful!");
+            alert("Payment Successful!\nYour Order ID: " + orderId);
+
+            cart = [];
+            updateCart();
+
+          
         }
     };
 
@@ -315,10 +207,13 @@ async function payNow() {
 }
 
 
-// ===== Save Order Function =====
+/* ===============================
+   SAVE ORDER FUNCTION
+=================================*/
+
 async function saveOrderToDB(name, phone, address, paymentType) {
 
-    await fetch("/order", {
+    const res = await fetch("/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -331,6 +226,165 @@ async function saveOrderToDB(name, phone, address, paymentType) {
         })
     });
 
-    cart = [];
-    updateCart();
+    const data = await res.json();
+    return data._id;   // IMPORTANT for tracking
+}
+
+
+/* ===============================
+   SCROLL FUNCTIONS
+=================================*/
+
+function openOrderForm() {
+
+    if (cart.length === 0) {
+        alert("Cart is empty!");
+        return;
+    }
+
+    const form = document.getElementById("orderForm");
+    form.style.display = "block";
+
+    form.scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+function scrollToCart() {
+    document.getElementById("cart").scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+
+/* ===============================
+   TRACK ORDER FEATURE
+=================================*/
+
+function openTrackOrder() {
+    document.getElementById("trackModal").style.display = "flex";
+}
+
+function closeTrackOrder() {
+    document.getElementById("trackModal").style.display = "none";
+}
+
+async function trackOrder() {
+
+    const orderId = document.getElementById("trackOrderId").value;
+    const phone = document.getElementById("trackPhone").value;
+
+    if (!orderId || !phone) {
+        alert("Enter Order ID and Phone");
+        return;
+    }
+
+    const res = await fetch("/track-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, phone })
+    });
+
+    const data = await res.json();
+    const resultBox = document.getElementById("trackResult");
+
+    if (res.status !== 200) {
+        resultBox.innerHTML = "❌ Order not found";
+        return;
+    }
+
+    // 🔥 DELIVERY PROGRESS LOGIC
+    const steps = ["Processing", "Cooking", "Out for Delivery", "Delivered"];
+    const currentStep = steps.indexOf(data.status);
+
+    let progressHTML = `
+        <div class="progress-container">
+            <div class="progress-bar">
+                ${steps.map((step, index) => 
+                    `<div class="progress-step ${index <= currentStep ? "active" : ""}"></div>`
+                ).join("")}
+            </div>
+            <div class="progress-labels">
+                <span>Processing</span>
+                <span>Cooking</span>
+                <span>Out</span>
+                <span>Delivered</span>
+            </div>
+        </div>
+    `;
+
+    resultBox.innerHTML = `
+        <p><strong>Status:</strong> ${data.status}</p>
+        <p><strong>Total:</strong> ₹${data.total}</p>
+
+        ${progressHTML}
+
+        <button onclick="copyOrderId('${orderId}')">
+            Copy Order ID
+        </button>
+
+        <a href="https://wa.me/919761492765?text=Hello%20I%20want%20to%20track%20my%20order%20ID%20${orderId}" target="_blank">
+            <button style="background:#25D366;color:white;margin-top:10px;">
+                WhatsApp Support
+            </button>
+        </a>
+
+        <a href="tel:+919761492765">
+            <button style="background:#111;color:white;margin-top:10px;">
+                Call Restaurant
+            </button>
+
+        </a>
+    `;
+}
+function copyOrderId(orderId) {
+
+    navigator.clipboard.writeText(orderId)
+        .then(() => {
+            alert("Order ID Copied!");
+        })
+        .catch(() => {
+            alert("Copy failed");
+        });
+}
+
+let orderCopied = false;
+
+function showSuccessModal(orderId) {
+
+    orderCopied = false;
+
+    document.getElementById("successOrderId").innerText = orderId;
+
+    const whatsappLink =
+        "https://wa.me/919876543210?text=Hello%20I%20have%20placed%20an%20order.%20My%20Order%20ID%20is%20" + orderId;
+
+    document.getElementById("whatsappBtn").href = whatsappLink;
+
+    document.getElementById("orderSuccessModal").style.display = "flex";
+}
+
+function copySuccessOrderId() {
+
+    const orderId =
+        document.getElementById("successOrderId").innerText;
+
+    navigator.clipboard.writeText(orderId)
+        .then(() => {
+            alert("Order ID Copied Successfully!");
+            orderCopied = true;
+        });
+}
+
+function closeSuccessModal() {
+
+    if (!orderCopied) {
+        alert("⚠ Please copy your Order ID before closing.");
+        return;
+    }
+
+    document.getElementById("orderSuccessModal").style.display = "none";
+
+    // Now safe to reload
+    window.location.reload();
 }

@@ -173,21 +173,21 @@ async function loadOrders() {
     container.innerHTML = "";
 
     data.forEach(order => {
-        container.innerHTML += `
-            <div class="admin-item">
-                <div>
-                    <strong>${order.customerName}</strong><br>
-                    ₹${order.total} | ${order.payment}<br>
-                    Status: ${order.status}
-                </div>
-                <div>
-                    ${order.status === "Pending"
-                        ? `<button onclick="markDelivered('${order._id}')">Mark Delivered</button>`
-                        : `<span style="color:green;">Delivered</span>`
-                    }
-                </div>
-            </div>
-        `;
+      container.innerHTML += `
+    <div class="order-box">
+        <strong>${order.customerName}</strong>
+        | ₹${order.total}
+        | ${order.payment}
+        | Status: 
+
+        <select onchange="updateStatus('${order._id}', this.value)">
+            <option ${order.status === "Processing" ? "selected" : ""}>Processing</option>
+            <option ${order.status === "Cooking" ? "selected" : ""}>Cooking</option>
+            <option ${order.status === "Out for Delivery" ? "selected" : ""}>Out for Delivery</option>
+            <option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
+        </select>
+    </div>
+`;
     });
 }
 
@@ -205,3 +205,31 @@ window.onload = () => {
     loadItems();
     loadOrders();
 };
+
+data.forEach(order => {
+
+    container.innerHTML += `
+        <div class="order-box">
+            <strong>${order.customerName}</strong>
+            ₹${order.total}
+
+            <select onchange="updateStatus('${order._id}', this.value)">
+                <option ${order.status==="Processing"?"selected":""}>Processing</option>
+                <option ${order.status==="Cooking"?"selected":""}>Cooking</option>
+                <option ${order.status==="Out for Delivery"?"selected":""}>Out for Delivery</option>
+                <option ${order.status==="Delivered"?"selected":""}>Delivered</option>
+            </select>
+        </div>
+    `;
+});
+
+async function updateStatus(id, status) {
+
+    await fetch(`/order-status/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+    });
+
+    loadOrders();
+}
