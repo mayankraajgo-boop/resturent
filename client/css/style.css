@@ -147,6 +147,7 @@ html {
 
 .hero-right img {
     width: 400px;
+    border-radius: 75px;
 }
 
 /* ================= FOOD GRID ================= */
