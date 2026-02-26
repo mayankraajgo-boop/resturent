@@ -357,7 +357,7 @@ function showSuccessModal(orderId) {
     document.getElementById("successOrderId").innerText = orderId;
 
     const whatsappLink =
-        "https://wa.me/919876543210?text=Hello%20I%20have%20placed%20an%20order.%20My%20Order%20ID%20is%20" + orderId;
+        "https://wa.me/919761492765?text=Hello%20I%20have%20placed%20an%20order.%20My%20Order%20ID%20is%20" + orderId;
 
     document.getElementById("whatsappBtn").href = whatsappLink;
 
