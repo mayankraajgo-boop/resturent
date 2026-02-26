@@ -219,7 +219,7 @@ app.delete("/delete-item/:id", async (req, res) => {
         await order.save();
 
         // 🔥 IMPORTANT — return full order
-        res.json(order);
+        res.status(201).json(order);
 
     } catch (err) {
         console.error("Order Save Error:", err.message);

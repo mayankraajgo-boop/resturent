@@ -20,17 +20,26 @@ window.addEventListener("DOMContentLoaded", () => {
    LOAD ITEMS
 =================================*/
 
+let allItems = [];   // Store all items globally
+
 async function loadItems() {
 
     const res = await fetch("/items");
     const data = await res.json();
+
+    allItems = data;   // Save items
+
+    displayItems(allItems);
+}
+
+function displayItems(items) {
 
     const container = document.getElementById("foodContainer");
     if (!container) return;
 
     container.innerHTML = "";
 
-    data.forEach(item => {
+    items.forEach(item => {
         container.innerHTML += `
             <div class="card">
                 <img src="${item.image}" alt="${item.name}">
@@ -42,6 +51,27 @@ async function loadItems() {
             </div>
         `;
     });
+}
+
+
+// Filter function 
+
+function filterItems(category) {
+
+    const buttons = document.querySelectorAll(".category-filter button");
+
+    buttons.forEach(btn => btn.classList.remove("active-filter"));
+
+    event.target.classList.add("active-filter");
+
+    if (category === "All") {
+        displayItems(allItems);
+    } else {
+        const filtered = allItems.filter(item =>
+            item.category === category
+        );
+        displayItems(filtered);
+    }
 }
 
 
@@ -183,22 +213,33 @@ async function payNow() {
     const data = await res.json();
 
     const options = {
-        key: "rzp_test_SKGrADd2eDINDu",
+        key: "rzp_test_SKGrADd2eDINDu",  // your test key
         amount: data.amount,
         currency: "INR",
         name: "MR Restaurant",
         description: "Food Order Payment",
         order_id: data.id,
+
         handler: async function () {
 
-            const orderId = await saveOrderToDB(name, phone, address, "ONLINE");
+            try {
 
-            alert("Payment Successful!\nYour Order ID: " + orderId);
+                const orderId = await saveOrderToDB(
+                    name,
+                    phone,
+                    address,
+                    "ONLINE"
+                );
 
-            cart = [];
-            updateCart();
+                // 🔥 IMPORTANT
+                showSuccessModal(orderId);
 
-          
+                cart = [];
+                updateCart();
+
+            } catch (err) {
+                console.error("Payment Save Error:", err);
+            }
         }
     };
 

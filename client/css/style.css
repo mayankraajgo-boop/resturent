@@ -889,3 +889,214 @@ body {
         padding: 25px;
     }
 }
+
+
+/* ===============================
+   PREMIUM CATEGORY FILTER
+=================================*/
+
+.category-filter {
+    display: flex;
+    gap: 18px;
+    margin: 40px 0;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.category-filter button {
+    padding: 10px 24px;
+    border-radius: 30px;
+    border: 2px solid transparent;
+    background: #f1f1f1;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* Hover Effect */
+.category-filter button:hover {
+    background: linear-gradient(135deg, #ff8c42, #ff6b00);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(255, 107, 0, 0.3);
+}
+
+/* Active Button */
+.category-filter .active-filter {
+    background: linear-gradient(135deg, #ff8c42, #ff6b00);
+    color: white;
+    border: 2px solid #ff6b00;
+    box-shadow: 0 6px 18px rgba(255, 107, 0, 0.35);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .category-filter {
+        justify-content: center;
+    }
+
+    .category-filter button {
+        padding: 8px 18px;
+        font-size: 13px;
+    }
+}
+
+
+/* =========================================
+   MOBILE APP STYLE TRANSFORMATION
+   (Only for screen <= 768px)
+=========================================*/
+
+
+
+/* =========================================
+   SAFE MOBILE FIX (<=768px)
+   Desktop untouched
+=========================================*/
+
+/* =========================================
+   RESPONSIVE SYSTEM
+   Desktop untouched
+=========================================*/
+
+
+/* ===== 320px - Small Phones ===== */
+@media (max-width: 320px) {
+
+    .main-card {
+        padding: 12px;
+        border-radius: 15px;
+    }
+
+    .hero {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .hero-left h1 {
+        font-size: 18px;
+        line-height: 1.2;
+    }
+
+    .hero-left p {
+        font-size: 12px;
+    }
+
+    .hero-right img {
+        width: 100%;
+        border-radius: 12px;
+    }
+
+    .category-filter {
+        overflow-x: auto;
+        gap: 8px;
+    }
+
+    .category-filter button {
+        font-size: 11px;
+        padding: 5px 10px;
+        white-space: nowrap;
+    }
+
+    .food-cards {
+        grid-template-columns: 1fr !important;
+    }
+
+    .card {
+        padding: 10px;
+    }
+
+    .card img {
+        width: 100%;
+        height: auto;
+    }
+
+    .place-order-btn {
+        width: 100%;
+        font-size: 13px;
+        padding: 10px;
+    }
+}
+
+
+
+/* ===== 375px - Medium Phones ===== */
+@media (min-width: 321px) and (max-width: 375px) {
+
+    .hero-left h1 {
+        font-size: 20px;
+    }
+
+    .food-cards {
+        grid-template-columns: 1fr !important;
+    }
+
+    .card img {
+        width: 100%;
+    }
+
+    .category-filter button {
+        font-size: 12px;
+    }
+}
+
+
+
+/* ===== 425px - Large Phones ===== */
+@media (min-width: 376px) and (max-width: 425px) {
+
+    .hero-left h1 {
+        font-size: 22px;
+    }
+
+    .food-cards {
+        grid-template-columns: 1fr !important;
+    }
+
+    .card img {
+        width: 100%;
+    }
+}
+
+
+
+/* ===== 600px - Big Phones / Small Tablet ===== */
+@media (min-width: 426px) and (max-width: 600px) {
+
+    .hero {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .food-cards {
+        grid-template-columns: 1fr !important;
+    }
+
+    .card img {
+        width: 100%;
+    }
+}
+
+
+
+/* ===== 768px - Tablet ===== */
+@media (min-width: 601px) and (max-width: 768px) {
+
+    .hero {
+        flex-direction: column;
+        gap: 25px;
+    }
+
+    .food-cards {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 20px;
+    }
+
+    .card img {
+        width: 100%;
+    }
+}
+
+

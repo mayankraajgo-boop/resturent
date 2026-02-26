@@ -55,7 +55,7 @@
             🛒 <span id="cartCount">0</span>
         </div>
 
-        <button class="order-btn" onclick="scrollToOrder()">Order Now</button>
+        <!-- <button class="order-btn" onclick="scrollToOrder()">Order Now</button> -->
     </nav>
 
 
@@ -84,8 +84,20 @@
 
 
     <!-- 🔥 DYNAMIC FOOD CARDS -->
-   <section id="menu">
+ <section id="menu">
+
+    <!-- CATEGORY FILTER -->
+    <div class="category-filter">
+
+        <button onclick="filterItems('All')" class="active-filter">All</button>
+        <button onclick="filterItems('Fast Food')">Fast Food</button>
+        <button onclick="filterItems('Indian Thali')">Indian Thali</button>
+        <button onclick="filterItems('Drinks')">Drinks</button>
+
+    </div>
+
     <div id="foodContainer" class="food-cards"></div>
+
 </section>
 
 
