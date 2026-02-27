@@ -124,9 +124,20 @@
 
     <!-- Customer Details -->
     <div class="form-group">
-        <input type="text" id="customerName" placeholder="Full Name">
-        <input type="text" id="customerPhone" placeholder="Phone Number">
-        <input type="text" id="customerAddress" placeholder="Delivery Address">
+      <input type="text" id="customerName" placeholder="Full Name" required>
+
+<input 
+    type="tel"
+    id="customerPhone"
+    placeholder="Phone Number"
+    maxlength="10"
+    pattern="[6-9]{1}[0-9]{9}"
+    inputmode="numeric"
+    required>
+
+<input type="text" id="customerAddress" placeholder="Delivery Address" required>
+
+<input type="text" id="customerStreet" placeholder="Street / Area *" required>
     </div>
 
     <!-- Payment Section -->
@@ -157,12 +168,9 @@
         </div>
 
         <!-- Buttons -->
-        <div class="payment-buttons">
-            <button class="cod-btn" onclick="confirmCOD()">Confirm Order (COD)</button>
-            <button class="online-btn" onclick="payNow()">Pay Now</button>
-        </div>
-
-    </div>
+   <button class="place-order-btn" onclick="placeOrder()">
+    Place Order
+</button>
 
 </section>
 <!-- ================= TRACK ORDER MODAL ================= -->

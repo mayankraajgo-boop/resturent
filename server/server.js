@@ -88,6 +88,7 @@ const OrderSchema = new mongoose.Schema({
     customerName: String,
     phone: String,
     address: String,
+    street: String,
     items: Array,
     total: Number,
     payment: String,

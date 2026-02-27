@@ -16,6 +16,29 @@ window.addEventListener("DOMContentLoaded", () => {
 });
 
 
+const phoneInput = document.getElementById("customerPhone");
+
+if (phoneInput) {
+
+    phoneInput.addEventListener("input", function () {
+
+        // Remove non-numeric characters
+        this.value = this.value.replace(/[^0-9]/g, "");
+
+        // Limit to 10 digits
+        if (this.value.length > 10) {
+            this.value = this.value.slice(0, 10);
+        }
+
+        // First digit restriction (6-9 only)
+        if (this.value.length === 1 && !/[6-9]/.test(this.value)) {
+            this.value = "";
+        }
+
+    });
+
+}
+
 /* ===============================
    LOAD ITEMS
 =================================*/
@@ -167,84 +190,91 @@ function updateCartCount() {
    ORDER SECTION
 =================================*/
 
-async function confirmCOD() {
 
-    let name = document.getElementById("customerName").value;
-    let phone = document.getElementById("customerPhone").value;
-    let address = document.getElementById("customerAddress").value;
-
-    if (!name || !phone || !address) {
-        alert("Please fill all details");
-        return;
-    }
-
-    const orderId = await saveOrderToDB(name, phone, address, "COD");
-
-    showSuccessModal(orderId);
-
-    cart = [];
-    updateCart();
-
-   
-}
 
 
 /* ===============================
    RAZORPAY PAYMENT
 =================================*/
 
-async function payNow() {
+async function placeOrder() {
 
-    let name = document.getElementById("customerName").value;
-    let phone = document.getElementById("customerPhone").value;
-    let address = document.getElementById("customerAddress").value;
+    const name = document.getElementById("customerName").value.trim();
+    const phone = document.getElementById("customerPhone").value.trim();
+    const address = document.getElementById("customerAddress").value.trim();
+    const street = document.getElementById("customerStreet").value.trim();
+    const paymentMethod = document.querySelector('input[name="payment"]:checked')?.value;
 
-    if (!name || !phone || !address) {
+    if (!name || !phone || !address || !street) {
         alert("Please fill all details");
         return;
     }
 
-    const res = await fetch("/create-razorpay-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: total })
-    });
+    // 🔥 STRICT PHONE VALIDATION
+    const phonePattern = /^[6-9]\d{9}$/;
 
-    const data = await res.json();
+    if (!phonePattern.test(phone)) {
+        alert("Enter valid 10 digit Indian mobile number starting with 6-9");
+        return;
+    }
 
-    const options = {
-        key: "rzp_test_SKGrADd2eDINDu",  // your test key
-        amount: data.amount,
-        currency: "INR",
-        name: "MR Restaurant",
-        description: "Food Order Payment",
-        order_id: data.id,
+    if (cart.length === 0) {
+        alert("Cart is empty");
+        return;
+    }
 
-        handler: async function () {
+    // ===== COD FLOW =====
+    if (paymentMethod === "COD") {
 
-            try {
+        const orderId = await saveOrderToDB(name, phone, address, street, "COD");
+
+        showSuccessModal(orderId);
+
+        cart = [];
+        updateCart();
+
+        return;
+    }
+
+    // ===== ONLINE FLOW =====
+    if (paymentMethod === "ONLINE") {
+
+        const res = await fetch("/create-razorpay-order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: total })
+        });
+
+        const data = await res.json();
+
+        const options = {
+            key: "rzp_test_SKGrADd2eDINDu", // replace with your test key
+            amount: data.amount,
+            currency: "INR",
+            name: "MR Restaurant",
+            description: "Food Order Payment",
+            order_id: data.id,
+
+            handler: async function () {
 
                 const orderId = await saveOrderToDB(
                     name,
                     phone,
                     address,
+                    street,
                     "ONLINE"
                 );
 
-                // 🔥 IMPORTANT
                 showSuccessModal(orderId);
 
                 cart = [];
                 updateCart();
-
-            } catch (err) {
-                console.error("Payment Save Error:", err);
             }
-        }
-    };
+        };
 
-    const rzp = new Razorpay(options);
-    rzp.open();
+        const rzp = new Razorpay(options);
+        rzp.open();
+    }
 }
 
 
@@ -252,7 +282,7 @@ async function payNow() {
    SAVE ORDER FUNCTION
 =================================*/
 
-async function saveOrderToDB(name, phone, address, paymentType) {
+async function saveOrderToDB(name, phone, address, street, paymentType) {
 
     const res = await fetch("/order", {
         method: "POST",
@@ -261,6 +291,7 @@ async function saveOrderToDB(name, phone, address, paymentType) {
             customerName: name,
             phone: phone,
             address: address,
+            street: street,
             items: cart,
             total: total,
             payment: paymentType
@@ -268,7 +299,7 @@ async function saveOrderToDB(name, phone, address, paymentType) {
     });
 
     const data = await res.json();
-    return data._id;   // IMPORTANT for tracking
+    return data._id;
 }
 
 
@@ -428,4 +459,90 @@ function closeSuccessModal() {
 
     // Now safe to reload
     window.location.reload();
+}
+
+async function placeOrder() {
+
+    const name = document.getElementById("customerName").value.trim();
+    const phone = document.getElementById("customerPhone").value.trim();
+    const address = document.getElementById("customerAddress").value.trim();
+    const street = document.getElementById("customerStreet").value.trim();
+
+    const paymentRadio = document.querySelector('input[name="payment"]:checked');
+
+    if (!name || !phone || !address || !street) {
+        alert("Please fill all details");
+        return;
+    }
+
+    // Strict phone validation
+    const phonePattern = /^[6-9]\d{9}$/;
+
+    if (!phonePattern.test(phone)) {
+        alert("Enter valid 10 digit Indian number starting with 6-9");
+        return;
+    }
+
+    if (!paymentRadio) {
+        alert("Select payment method");
+        return;
+    }
+
+    if (cart.length === 0) {
+        alert("Cart is empty");
+        return;
+    }
+
+    const paymentMethod = paymentRadio.value;
+
+    // ===== COD =====
+    if (paymentMethod === "COD") {
+
+        const orderId = await saveOrderToDB(name, phone, address, street, "COD");
+
+        showSuccessModal(orderId);
+
+        cart = [];
+        updateCart();
+        return;
+    }
+
+    // ===== ONLINE =====
+    if (paymentMethod === "ONLINE") {
+
+        const res = await fetch("/create-razorpay-order", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount: total })
+        });
+
+        const data = await res.json();
+
+        const options = {
+            key: "rzp_test_SKGrADd2eDINDu",  // replace with your test key
+            amount: data.amount,
+            currency: "INR",
+            name: "MR Restaurant",
+            description: "Food Order Payment",
+            order_id: data.id,
+            handler: async function () {
+
+                const orderId = await saveOrderToDB(
+                    name,
+                    phone,
+                    address,
+                    street,
+                    "ONLINE"
+                );
+
+                showSuccessModal(orderId);
+
+                cart = [];
+                updateCart();
+            }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+    }
 }
