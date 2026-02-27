@@ -16,3 +16,7 @@ Thumbs.db
 # Build folders
 dist/
 build/
+
+# Uploads
+client/uploads/*
+!client/uploads/.gitkeep

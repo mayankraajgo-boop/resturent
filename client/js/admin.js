@@ -165,7 +165,6 @@ function clearForm() {
 // ORDERS
 // =====================
 async function loadOrders() {
-
     const res = await fetch("/orders");
     const data = await res.json();
 
@@ -173,26 +172,31 @@ async function loadOrders() {
     container.innerHTML = "";
 
     data.forEach(order => {
-      container.innerHTML += `
-    <div class="order-box">
-        <strong>${order.customerName}</strong>
-        | ₹${order.total}
-        | ${order.payment}
-        | Status: 
+        container.innerHTML += `
+            <div class="order-box">
+                <strong>${order.customerName}</strong>
+                | ₹${order.total}
+                | ${order.payment}
+                | Status: 
 
-        <select onchange="updateStatus('${order._id}', this.value)">
-            <option ${order.status === "Processing" ? "selected" : ""}>Processing</option>
-            <option ${order.status === "Cooking" ? "selected" : ""}>Cooking</option>
-            <option ${order.status === "Out for Delivery" ? "selected" : ""}>Out for Delivery</option>
-            <option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
-        </select>
-    </div>
-`;
+                <select onchange="updateStatus('${order._id}', this.value)">
+                    <option ${order.status === "Processing" ? "selected" : ""}>Processing</option>
+                    <option ${order.status === "Cooking" ? "selected" : ""}>Cooking</option>
+                    <option ${order.status === "Out for Delivery" ? "selected" : ""}>Out for Delivery</option>
+                    <option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
+                </select>
+            </div>
+        `;
     });
 }
 
-async function markDelivered(id) {
-    await fetch(`/order-status/${id}`, { method: "PUT" });
+async function updateStatus(id, status) {
+    await fetch(`/order-status/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+    });
+
     loadOrders();
     loadDashboardStats();
 }
@@ -205,31 +209,3 @@ window.onload = () => {
     loadItems();
     loadOrders();
 };
-
-data.forEach(order => {
-
-    container.innerHTML += `
-        <div class="order-box">
-            <strong>${order.customerName}</strong>
-            ₹${order.total}
-
-            <select onchange="updateStatus('${order._id}', this.value)">
-                <option ${order.status==="Processing"?"selected":""}>Processing</option>
-                <option ${order.status==="Cooking"?"selected":""}>Cooking</option>
-                <option ${order.status==="Out for Delivery"?"selected":""}>Out for Delivery</option>
-                <option ${order.status==="Delivered"?"selected":""}>Delivered</option>
-            </select>
-        </div>
-    `;
-});
-
-async function updateStatus(id, status) {
-
-    await fetch(`/order-status/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status })
-    });
-
-    loadOrders();
-}

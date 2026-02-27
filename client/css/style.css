@@ -1,28 +1,23 @@
 /* ================= RESET ================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
+body {
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #f4a261 transparent;
+}
 
-/* ===== GLOBAL SCROLL FIX ===== */
-
-html, body {
+html {
+    scroll-behavior: smooth;
     height: auto;
     overflow-x: hidden;
     overflow-y: auto;
-    scroll-behavior: smooth;
-}
-
-/* Modern Smooth Scroll */
-body {
-    -webkit-overflow-scrolling: touch;
-}
-
-/* Smooth Scroll Animation */
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    scrollbar-width: thin;
-    scrollbar-color: #f4a261 transparent;
 }
 
 /* Chrome Scrollbar */
@@ -37,20 +32,6 @@ body::-webkit-scrollbar-track {
 body::-webkit-scrollbar-thumb {
     background: #f4a261;
     border-radius: 10px;
-}
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-body {
-    font-family: 'Poppins', sans-serif;
-}
-
-html {
-    scroll-behavior: smooth;
 }
 
 
@@ -350,7 +331,6 @@ html {
 }
 
 /* ================= POPUP ================= */
-
 .popup {
     position: fixed;
     top: 0;
@@ -384,7 +364,8 @@ html {
     border-radius: 6px;
     cursor: pointer;
 }
-/* ===== ORDER SECTION ===== */
+
+/* ================= TRACK ORDER ================= */
 
 .order-section {
     background: #ffffff;
@@ -652,7 +633,6 @@ body {
 }
 
 /* ================= TRACK ORDER ================= */
-
 .track-modal {
     position: fixed;
     inset: 0;
@@ -747,53 +727,7 @@ body {
     font-size: 12px;
 }
 
-/* ORDER SUCCESS MODAL */
-
-.success-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-}
-
-.success-box {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    width: 350px;
-    text-align: center;
-}
-
-.order-id {
-    font-weight: bold;
-    margin: 10px 0;
-    color: #f4a261;
-    word-break: break-all;
-}
-
-.whatsapp-btn {
-    background: #25D366;
-    color: white;
-    margin-top: 10px;
-}
-
-.success-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-/* ===============================
-   ORDER SUCCESS MODAL - PREMIUM UI
-=================================*/
-
+/* ================= ORDER SUCCESS MODAL ================= */
 .success-modal {
     position: fixed;
     inset: 0;
@@ -891,10 +825,7 @@ body {
     }
 }
 
-
-/* ===============================
-   PREMIUM CATEGORY FILTER
-=================================*/
+/* ================= PREMIUM CATEGORY FILTER ================= */
 
 .category-filter {
     display: flex;
@@ -944,26 +875,7 @@ body {
     }
 }
 
-
-/* =========================================
-   MOBILE APP STYLE TRANSFORMATION
-   (Only for screen <= 768px)
-=========================================*/
-
-
-
-/* =========================================
-   SAFE MOBILE FIX (<=768px)
-   Desktop untouched
-=========================================*/
-
-/* =========================================
-   RESPONSIVE SYSTEM
-   Desktop untouched
-=========================================*/
-
-
-/* ===== 320px - Small Phones ===== */
+/* ================= RESPONSIVE DESIGN ================= */
 @media (max-width: 320px) {
 
     .main-card {

@@ -78,21 +78,22 @@ function displayItems(items) {
 
 
 // Filter function 
-
 function filterItems(category) {
-
     const buttons = document.querySelectorAll(".category-filter button");
-
     buttons.forEach(btn => btn.classList.remove("active-filter"));
-
-    event.target.classList.add("active-filter");
+    
+    // Find and activate the clicked button
+    const clickedButton = Array.from(buttons).find(btn => 
+        btn.textContent.trim() === category
+    );
+    if (clickedButton) {
+        clickedButton.classList.add("active-filter");
+    }
 
     if (category === "All") {
         displayItems(allItems);
     } else {
-        const filtered = allItems.filter(item =>
-            item.category === category
-        );
+        const filtered = allItems.filter(item => item.category === category);
         displayItems(filtered);
     }
 }
@@ -372,7 +373,7 @@ async function trackOrder() {
     let progressHTML = `
         <div class="progress-container">
             <div class="progress-bar">
-                ${steps.map((step, index) => 
+                ${steps.map((_, index) => 
                     `<div class="progress-step ${index <= currentStep ? "active" : ""}"></div>`
                 ).join("")}
             </div>
@@ -456,102 +457,16 @@ function closeSuccessModal() {
     }
 
     document.getElementById("orderSuccessModal").style.display = "none";
-
-    // Now safe to reload
     window.location.reload();
 }
 
-async function placeOrder() {
-
-    const name = document.getElementById("customerName").value.trim();
-    const phone = document.getElementById("customerPhone").value.trim();
-    const address = document.getElementById("customerAddress").value.trim();
-    const street = document.getElementById("customerStreet").value.trim();
-
-    const paymentRadio = document.querySelector('input[name="payment"]:checked');
-
-    if (!name || !phone || !address || !street) {
-        alert("Please fill all details");
-        return;
-    }
-
-    // Strict phone validation
-    const phonePattern = /^[6-9]\d{9}$/;
-
-    if (!phonePattern.test(phone)) {
-        alert("Enter valid 10 digit Indian number starting with 6-9");
-        return;
-    }
-
-    if (!paymentRadio) {
-        alert("Select payment method");
-        return;
-    }
-
-    if (cart.length === 0) {
-        alert("Cart is empty");
-        return;
-    }
-
-    const paymentMethod = paymentRadio.value;
-
-    // ===== COD =====
-    if (paymentMethod === "COD") {
-
-        const orderId = await saveOrderToDB(name, phone, address, street, "COD");
-
-        showSuccessModal(orderId);
-
-        cart = [];
-        updateCart();
-        return;
-    }
-
-    // ===== ONLINE =====
-    if (paymentMethod === "ONLINE") {
-
-        const res = await fetch("/create-razorpay-order", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ amount: total })
-        });
-
-        const data = await res.json();
-
-        const options = {
-            key: "rzp_test_SKGrADd2eDINDu",  // replace with your test key
-            amount: data.amount,
-            currency: "INR",
-            name: "MR Restaurant",
-            description: "Food Order Payment",
-            order_id: data.id,
-            handler: async function () {
-
-                const orderId = await saveOrderToDB(
-                    name,
-                    phone,
-                    address,
-                    street,
-                    "ONLINE"
-                );
-
-                showSuccessModal(orderId);
-
-                cart = [];
-                updateCart();
-            }
-        };
-
-        const rzp = new Razorpay(options);
-        rzp.open();
-    }
-}
-
-
+/* ===============================
+   PWA SERVICE WORKER
+=================================*/
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js")
-      .then(() => console.log("PWA Ready"))
-      .catch(err => console.log("SW Error:", err));
-  });
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js")
+            .then(() => console.log("PWA Ready"))
+            .catch(err => console.log("SW Error:", err));
+    });
 }
