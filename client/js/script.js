@@ -13,30 +13,29 @@ let total = 0;
 window.addEventListener("DOMContentLoaded", () => {
     loadItems();
     updateCartCount();
+    setupPhoneValidation(); // Setup phone validation after DOM loads
 });
 
+// Phone number validation setup
+function setupPhoneValidation() {
+    const phoneInput = document.getElementById("customerPhone");
 
-const phoneInput = document.getElementById("customerPhone");
+    if (phoneInput) {
+        phoneInput.addEventListener("input", function () {
+            // Remove non-numeric characters
+            this.value = this.value.replace(/[^0-9]/g, "");
 
-if (phoneInput) {
+            // Limit to 10 digits
+            if (this.value.length > 10) {
+                this.value = this.value.slice(0, 10);
+            }
 
-    phoneInput.addEventListener("input", function () {
-
-        // Remove non-numeric characters
-        this.value = this.value.replace(/[^0-9]/g, "");
-
-        // Limit to 10 digits
-        if (this.value.length > 10) {
-            this.value = this.value.slice(0, 10);
-        }
-
-        // First digit restriction (6-9 only)
-        if (this.value.length === 1 && !/[6-9]/.test(this.value)) {
-            this.value = "";
-        }
-
-    });
-
+            // First digit restriction (6-9 only)
+            if (this.value.length === 1 && !/[6-9]/.test(this.value)) {
+                this.value = "";
+            }
+        });
+    }
 }
 
 /* ===============================
@@ -187,9 +186,6 @@ function updateCartCount() {
 }
 
 
-/* ===============================
-   ORDER SECTION
-=================================*/
 
 
 
@@ -461,12 +457,89 @@ function closeSuccessModal() {
 }
 
 /* ===============================
-   PWA SERVICE WORKER
+   PWA SERVICE WORKER - FULL SUPPORT
 =================================*/
-if ("serviceWorker" in navigator) {
-    window.addEventListener("load", () => {
-        navigator.serviceWorker.register("/sw.js")
-            .then(() => console.log("PWA Ready"))
-            .catch(err => console.log("SW Error:", err));
+
+let deferredPrompt;
+let isInstalled = false;
+
+// Check if app is already installed
+if (window.matchMedia('(display-mode: standalone)').matches) {
+    isInstalled = true;
+    console.log('PWA is installed');
+}
+
+// Register Service Worker
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+                console.log('✅ Service Worker registered:', registration.scope);
+            })
+            .catch(error => {
+                console.log('❌ Service Worker registration failed:', error);
+            });
     });
+}
+
+// Capture the install prompt event
+window.addEventListener('beforeinstallprompt', (e) => {
+    console.log('PWA install prompt available');
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Show install button if not already installed
+    if (!isInstalled) {
+        const installBtn = document.querySelector('.install-app-btn');
+        if (installBtn) {
+            installBtn.style.display = 'block';
+        }
+    }
+});
+
+// Handle successful installation
+window.addEventListener('appinstalled', () => {
+    console.log('✅ PWA installed successfully');
+    isInstalled = true;
+    deferredPrompt = null;
+    
+    // Hide install button
+    const installBtn = document.querySelector('.install-app-btn');
+    if (installBtn) {
+        installBtn.style.display = 'none';
+    }
+    
+    alert('🎉 App installed successfully! You can now use it offline.');
+});
+
+// Install PWA function
+function installPWA() {
+    if (!deferredPrompt) {
+        if (isInstalled) {
+            alert('✅ App is already installed!');
+        } else {
+            alert('ℹ️ To install:\n\n1. Click menu (⋮) in your browser\n2. Select "Install app" or "Add to Home screen"\n\nWorks best on Chrome/Edge mobile browsers.');
+        }
+        return;
+    }
+    
+    // Show the install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for user response
+    deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the install prompt');
+        } else {
+            console.log('User dismissed the install prompt');
+        }
+        deferredPrompt = null;
+    });
+}
+
+function dismissPWA() {
+    const prompt = document.getElementById("pwaInstallPrompt");
+    if (prompt) {
+        prompt.style.display = "none";
+    }
 }

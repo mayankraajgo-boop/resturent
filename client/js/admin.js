@@ -23,23 +23,56 @@ function showSection(id) {
 }
 
 // =====================
-// DASHBOARD STATS
+// DASHBOARD STATS WITH REAL-TIME DATA
 // =====================
 async function loadDashboardStats() {
 
     const res = await fetch("/admin/stats");
     const data = await res.json();
 
-    document.querySelector(".green p").innerText = "₹ " + data.totalRevenue;
-    document.querySelector(".purple p").innerText = data.totalOrders;
-    document.querySelector(".red p").innerText = data.pendingOrders;
+    document.getElementById("totalRevenue").innerText = "₹ " + data.totalRevenue;
+    document.getElementById("totalOrders").innerText = data.totalOrders;
+    document.getElementById("pendingOrders").innerText = data.pendingOrders;
 
     const avg = data.totalOrders > 0
         ? Math.floor(data.totalRevenue / data.totalOrders)
         : 0;
 
-    document.querySelector(".blue p").innerText = "₹ " + avg;
+    document.getElementById("avgRevenue").innerText = "₹ " + avg;
+
+    // Load today's stats
+    loadTodayStats();
 }
+
+// =====================
+// TODAY'S STATS (REAL-TIME)
+// =====================
+async function loadTodayStats() {
+    const res = await fetch("/orders");
+    const orders = await res.json();
+
+    const today = new Date().toDateString();
+    
+    const todayOrders = orders.filter(order => {
+        const orderDate = new Date(order.createdAt).toDateString();
+        return orderDate === today;
+    });
+
+    const todayRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
+    const completedToday = todayOrders.filter(o => o.status === "Delivered").length;
+
+    document.getElementById("todayOrders").innerText = todayOrders.length;
+    document.getElementById("todayRevenue").innerText = "₹ " + todayRevenue;
+    document.getElementById("completedToday").innerText = completedToday;
+}
+
+// =====================
+// AUTO-REFRESH EVERY 10 SECONDS
+// =====================
+setInterval(() => {
+    loadDashboardStats();
+    loadOrders();
+}, 10000); // Refresh every 10 seconds
 
 // =====================
 // CHARTS
@@ -162,32 +195,92 @@ function clearForm() {
 }
 
 // =====================
-// ORDERS
+// ORDERS WITH REAL-TIME UPDATES
 // =====================
+let allOrders = [];
+
 async function loadOrders() {
     const res = await fetch("/orders");
-    const data = await res.json();
+    allOrders = await res.json();
+    displayOrders(allOrders);
+}
 
+function displayOrders(orders) {
     const container = document.getElementById("ordersList");
     container.innerHTML = "";
 
-    data.forEach(order => {
-        container.innerHTML += `
-            <div class="order-box">
-                <strong>${order.customerName}</strong>
-                | ₹${order.total}
-                | ${order.payment}
-                | Status: 
+    if (orders.length === 0) {
+        container.innerHTML = "<p style='text-align:center;color:#94a3b8;'>No orders found</p>";
+        return;
+    }
 
-                <select onchange="updateStatus('${order._id}', this.value)">
-                    <option ${order.status === "Processing" ? "selected" : ""}>Processing</option>
-                    <option ${order.status === "Cooking" ? "selected" : ""}>Cooking</option>
-                    <option ${order.status === "Out for Delivery" ? "selected" : ""}>Out for Delivery</option>
-                    <option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
-                </select>
+    orders.forEach(order => {
+        const orderDate = new Date(order.createdAt).toLocaleString();
+        
+        container.innerHTML += `
+            <div class="order-box ${order.status.toLowerCase().replace(/\s/g, '-')}">
+                <div class="order-header">
+                    <strong>🧑 ${order.customerName}</strong>
+                    <span class="order-id">ID: ${order._id.slice(-6)}</span>
+                </div>
+                <div class="order-details">
+                    <p>📞 ${order.phone}</p>
+                    <p>📍 ${order.address}, ${order.street}</p>
+                    <p>💰 ₹${order.total} | ${order.payment}</p>
+                    <p>🕒 ${orderDate}</p>
+                </div>
+                <div class="order-actions">
+                    <select onchange="updateStatus('${order._id}', this.value)" class="status-select">
+                        <option ${order.status === "Processing" ? "selected" : ""}>Processing</option>
+                        <option ${order.status === "Cooking" ? "selected" : ""}>Cooking</option>
+                        <option ${order.status === "Out for Delivery" ? "selected" : ""}>Out for Delivery</option>
+                        <option ${order.status === "Delivered" ? "selected" : ""}>Delivered</option>
+                    </select>
+                    <button onclick="viewOrderDetails('${order._id}')" class="view-btn">View Items</button>
+                </div>
             </div>
         `;
     });
+}
+
+// =====================
+// SEARCH & FILTER ORDERS
+// =====================
+function filterOrders() {
+    const searchTerm = document.getElementById("searchOrder").value.toLowerCase();
+    const statusFilter = document.getElementById("statusFilter").value;
+
+    let filtered = allOrders;
+
+    // Filter by search term
+    if (searchTerm) {
+        filtered = filtered.filter(order => 
+            order.customerName.toLowerCase().includes(searchTerm) ||
+            order.phone.includes(searchTerm) ||
+            order._id.includes(searchTerm)
+        );
+    }
+
+    // Filter by status
+    if (statusFilter) {
+        filtered = filtered.filter(order => order.status === statusFilter);
+    }
+
+    displayOrders(filtered);
+}
+
+// =====================
+// VIEW ORDER DETAILS
+// =====================
+function viewOrderDetails(orderId) {
+    const order = allOrders.find(o => o._id === orderId);
+    if (!order) return;
+
+    const itemsList = order.items.map(item => 
+        `${item.name} x${item.quantity} = ₹${item.price * item.quantity}`
+    ).join('\n');
+
+    alert(`Order Details:\n\n${itemsList}\n\nTotal: ₹${order.total}`);
 }
 
 async function updateStatus(id, status) {
