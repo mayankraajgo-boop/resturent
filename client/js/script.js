@@ -7,6 +7,59 @@ let total = 0;
 
 
 /* ===============================
+   TOAST NOTIFICATIONS
+=================================*/
+
+function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    
+    const icons = {
+        success: '✅',
+        error: '❌',
+        info: 'ℹ️'
+    };
+    
+    toast.innerHTML = `
+        <span class="toast-icon">${icons[type]}</span>
+        <span class="toast-message">${message}</span>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+}
+
+
+/* ===============================
+   SEARCH FUNCTIONALITY
+=================================*/
+
+function searchItems() {
+    const searchTerm = document.getElementById('searchBox').value.toLowerCase();
+    
+    if (!searchTerm) {
+        displayItems(allItems);
+        return;
+    }
+    
+    const filtered = allItems.filter(item => 
+        item.name.toLowerCase().includes(searchTerm) ||
+        item.category.toLowerCase().includes(searchTerm)
+    );
+    
+    displayItems(filtered);
+    
+    if (filtered.length === 0) {
+        document.getElementById('foodContainer').innerHTML = 
+            '<p style="text-align:center;color:#666;padding:40px;">No items found. Try different keywords.</p>';
+    }
+}
+
+
+/* ===============================
    INITIAL LOAD
 =================================*/
 
@@ -61,12 +114,17 @@ function displayItems(items) {
 
     container.innerHTML = "";
 
-    items.forEach(item => {
+    items.forEach((item, index) => {
+        // Mark first 3 items as popular
+        const isPopular = index < 3;
+        
         container.innerHTML += `
             <div class="card">
+                ${isPopular ? '<span class="popular-badge">🔥 Popular</span>' : ''}
                 <img src="${item.image}" alt="${item.name}">
                 <h3>${item.name}</h3>
                 <p>₹${item.price}</p>
+                <span class="delivery-time">⚡ 15-20 mins</span>
                 <button onclick="addToCart('${item.name}', ${item.price})">
                     Add To Cart
                 </button>
@@ -108,8 +166,10 @@ function addToCart(name, price) {
 
     if (item) {
         item.quantity++;
+        showToast(`${name} quantity increased!`, 'success');
     } else {
         cart.push({ name, price, quantity: 1 });
+        showToast(`${name} added to cart!`, 'success');
     }
 
     updateCart();
