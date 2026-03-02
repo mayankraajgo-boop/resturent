@@ -15,9 +15,12 @@
         <h2 class="logo">MR Admin</h2>
 
         <ul>
-            <li onclick="showSection('dashboard')" class="active">Dashboard</li>
-            <li onclick="showSection('menuSection')">Menu</li>
-            <li onclick="showSection('ordersSection')">Orders</li>
+            <li onclick="showSection('dashboard')" class="active">📊 Dashboard</li>
+            <li onclick="showSection('menuSection')">🍔 Menu</li>
+            <li onclick="showSection('comboSection')">🎁 Combo Deals</li>
+            <li onclick="showSection('ordersSection')">📋 Orders</li>
+            <li onclick="showSection('couponSection')">🎟️ Coupons</li>
+            <li onclick="showSection('settingsSection')">⚙️ Settings</li>
         </ul>
 
         <button class="logout-btn">Logout</button>
@@ -52,7 +55,6 @@
                 </div>
             </div>
 
-            <!-- NEW: Today's Stats -->
             <div class="today-stats">
                 <h3>Today's Performance</h3>
                 <div class="stats-grid">
@@ -85,13 +87,23 @@
         <!-- MENU MANAGEMENT -->
         <div id="menuSection" class="section" style="display:none;">
 
-            <h3>Menu Management</h3>
+            <h3>🍔 Menu Management</h3>
 
             <div class="form-box">
                 <input type="text" id="itemName" placeholder="Food Name">
                 <input type="number" id="itemPrice" placeholder="Price">
                 <input type="text" id="itemCategory" placeholder="Category">
                 <input type="file" id="itemImage">
+                
+                <label style="display:flex;align-items:center;gap:10px;">
+                    <input type="checkbox" id="itemInStock" checked>
+                    <span>In Stock</span>
+                </label>
+                
+                <label style="display:flex;align-items:center;gap:10px;">
+                    <input type="checkbox" id="itemIsSpecial">
+                    <span>Daily Special</span>
+                </label>
 
                 <button id="addBtn" onclick="addItem()">Add Item</button>
                 <button id="cancelBtn" style="display:none;" onclick="cancelEdit()">Cancel</button>
@@ -101,11 +113,29 @@
 
         </div>
 
+        <!-- COMBO DEALS -->
+        <div id="comboSection" class="section" style="display:none;">
+            <h3>🎁 Combo Deals Management</h3>
+            
+            <div class="form-box">
+                <input type="text" id="comboName" placeholder="Combo Name">
+                <input type="text" id="comboDescription" placeholder="Description">
+                <input type="text" id="comboItems" placeholder="Items (comma separated)">
+                <input type="number" id="comboOriginalPrice" placeholder="Original Price">
+                <input type="number" id="comboPrice" placeholder="Combo Price">
+                <input type="file" id="comboImage">
+                
+                <button id="addComboBtn" onclick="addCombo()">Add Combo</button>
+                <button id="cancelComboBtn" style="display:none;" onclick="cancelComboEdit()">Cancel</button>
+            </div>
+            
+            <div id="combosList"></div>
+        </div>
+
         <!-- ORDERS -->
         <div id="ordersSection" class="section" style="display:none;">
             <h3>📋 Orders Management</h3>
             
-            <!-- Search & Filter -->
             <div class="order-filters">
                 <input type="text" id="searchOrder" placeholder="🔍 Search by name, phone, or order ID..." onkeyup="filterOrders()">
                 <select id="statusFilter" onchange="filterOrders()">
@@ -118,6 +148,53 @@
             </div>
 
             <div id="ordersList"></div>
+        </div>
+
+        <!-- COUPONS -->
+        <div id="couponSection" class="section" style="display:none;">
+            <h3>🎟️ Coupon Management</h3>
+            
+            <div class="form-box">
+                <input type="text" id="couponCode" placeholder="Coupon Code (e.g., SAVE20)" style="text-transform:uppercase;">
+                <input type="number" id="couponDiscount" placeholder="Discount Value">
+                <select id="couponType">
+                    <option value="percentage">Percentage (%)</option>
+                    <option value="fixed">Fixed Amount (₹)</option>
+                </select>
+                <input type="number" id="couponMinOrder" placeholder="Minimum Order Amount">
+                <input type="number" id="couponMaxDiscount" placeholder="Max Discount (for %)">
+                <input type="date" id="couponExpiry">
+                <input type="number" id="couponUsageLimit" placeholder="Usage Limit">
+                
+                <button onclick="addCoupon()">Add Coupon</button>
+            </div>
+            
+            <div id="couponsList"></div>
+        </div>
+
+        <!-- SETTINGS -->
+        <div id="settingsSection" class="section" style="display:none;">
+            <h3>⚙️ Restaurant Settings</h3>
+            
+            <div class="form-box">
+                <h4>Business Settings</h4>
+                <label>Minimum Order Amount (₹)</label>
+                <input type="number" id="minOrderAmount" placeholder="0">
+                
+                <label style="display:flex;align-items:center;gap:10px;margin-top:20px;">
+                    <input type="checkbox" id="isPeakHours">
+                    <span>Enable Peak Hours Banner</span>
+                </label>
+                
+                <input type="text" id="peakHoursMessage" placeholder="Peak hours message">
+                
+                <h4 style="margin-top:30px;">Social Media Links</h4>
+                <input type="text" id="instagramLink" placeholder="Instagram URL">
+                <input type="text" id="facebookLink" placeholder="Facebook URL">
+                <input type="text" id="twitterLink" placeholder="Twitter URL">
+                
+                <button onclick="saveSettings()">Save Settings</button>
+            </div>
         </div>
 
     </div>

@@ -137,39 +137,74 @@ async function addItem() {
     const price = document.getElementById("itemPrice").value;
     const category = document.getElementById("itemCategory").value;
     const image = document.getElementById("itemImage").files[0];
+    const inStock = document.getElementById("itemInStock") ? document.getElementById("itemInStock").checked : true;
+    const isSpecial = document.getElementById("itemIsSpecial") ? document.getElementById("itemIsSpecial").checked : false;
+
+    if (!name || !price || !category) {
+        alert("Please fill all required fields");
+        return;
+    }
 
     const formData = new FormData();
     formData.append("name", name);
     formData.append("price", price);
     formData.append("category", category);
+    formData.append("inStock", inStock);
+    formData.append("isSpecial", isSpecial);
     if (image) formData.append("image", image);
 
-    if (editId) {
-        await fetch(`/update-item/${editId}`, {
-            method: "PUT",
-            body: formData
-        });
-        editId = null;
-        document.getElementById("addBtn").innerText = "Add Item";
-        document.getElementById("cancelBtn").style.display = "none";
-    } else {
-        await fetch("/add-item", {
-            method: "POST",
-            body: formData
-        });
-    }
+    try {
+        if (editId) {
+            const res = await fetch(`/update-item/${editId}`, {
+                method: "PUT",
+                body: formData
+            });
+            
+            if (res.ok) {
+                alert("✅ Item updated successfully!");
+            } else {
+                alert("❌ Failed to update item");
+            }
+            
+            editId = null;
+            document.getElementById("addBtn").innerText = "Add Item";
+            document.getElementById("cancelBtn").style.display = "none";
+        } else {
+            const res = await fetch("/add-item", {
+                method: "POST",
+                body: formData
+            });
+            
+            if (res.ok) {
+                alert("✅ Item added successfully!");
+            } else {
+                alert("❌ Failed to add item");
+            }
+        }
 
-    clearForm();
-    loadItems();
+        clearForm();
+        loadItems();
+    } catch (err) {
+        console.error("Error saving item:", err);
+        alert("❌ Error: " + err.message);
+    }
 }
 
-function startEdit(id, name, price, category) {
+function startEdit(id, name, price, category, inStock, isSpecial) {
 
     editId = id;
 
     document.getElementById("itemName").value = name;
     document.getElementById("itemPrice").value = price;
     document.getElementById("itemCategory").value = category;
+    
+    if (document.getElementById("itemInStock")) {
+        document.getElementById("itemInStock").checked = inStock !== false;
+    }
+    
+    if (document.getElementById("itemIsSpecial")) {
+        document.getElementById("itemIsSpecial").checked = isSpecial === true;
+    }
 
     document.getElementById("addBtn").innerText = "Update Item";
     document.getElementById("cancelBtn").style.display = "inline-block";

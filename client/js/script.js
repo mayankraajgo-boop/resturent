@@ -4,6 +4,8 @@
 
 let cart = [];
 let total = 0;
+let appliedCoupon = null;
+let discount = 0;
 
 
 /* ===============================
@@ -66,7 +68,9 @@ function searchItems() {
 window.addEventListener("DOMContentLoaded", () => {
     loadItems();
     updateCartCount();
-    setupPhoneValidation(); // Setup phone validation after DOM loads
+    setupPhoneValidation();
+    initDarkMode();
+    loadAvailableCoupons();
 });
 
 // Phone number validation setup
@@ -92,6 +96,52 @@ function setupPhoneValidation() {
 }
 
 /* ===============================
+   DARK MODE
+=================================*/
+
+function initDarkMode() {
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+    }
+    
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'dark-mode-toggle';
+    toggleBtn.innerHTML = isDarkMode ? '☀️' : '🌙';
+    toggleBtn.onclick = toggleDarkMode;
+    toggleBtn.title = 'Toggle Dark Mode';
+    document.body.appendChild(toggleBtn);
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    
+    localStorage.setItem('darkMode', isDarkMode);
+    
+    const toggleBtn = document.querySelector('.dark-mode-toggle');
+    toggleBtn.innerHTML = isDarkMode ? '☀️' : '🌙';
+    
+    showToast(isDarkMode ? 'Dark mode enabled' : 'Light mode enabled', 'info');
+}
+
+/* ===============================
+   COUPON FUNCTIONS
+=================================*/
+
+let availableCoupons = [];
+
+async function loadAvailableCoupons() {
+    try {
+        const res = await fetch("/coupons");
+        availableCoupons = await res.json();
+    } catch (err) {
+        console.error("Failed to load coupons:", err);
+    }
+}
+
+/* ===============================
    LOAD ITEMS
 =================================*/
 
@@ -99,12 +149,20 @@ let allItems = [];   // Store all items globally
 
 async function loadItems() {
 
-    const res = await fetch("/items");
-    const data = await res.json();
+    try {
+        // Add cache busting to ensure fresh data
+        const res = await fetch("/items?t=" + Date.now());
+        const data = await res.json();
 
-    allItems = data;   // Save items
+        console.log("✅ Loaded items:", data.length);
 
-    displayItems(allItems);
+        allItems = data;   // Save items
+
+        displayItems(allItems);
+    } catch (err) {
+        console.error("❌ Failed to load items:", err);
+        showToast("Failed to load menu items", "error");
+    }
 }
 
 function displayItems(items) {
@@ -118,15 +176,25 @@ function displayItems(items) {
         // Mark first 3 items as popular
         const isPopular = index < 3;
         
+        // Check if out of stock
+        const outOfStock = !item.inStock;
+        const outOfStockClass = outOfStock ? 'out-of-stock' : '';
+        const outOfStockBadge = outOfStock ? '<div class="out-of-stock-badge">OUT OF STOCK</div>' : '';
+        
+        // Special badge
+        const specialBadge = item.isSpecial ? '<span class="popular-badge">⭐ Today\'s Special</span>' : '';
+        
         container.innerHTML += `
-            <div class="card">
-                ${isPopular ? '<span class="popular-badge">🔥 Popular</span>' : ''}
+            <div class="card ${outOfStockClass}">
+                ${isPopular && !item.isSpecial ? '<span class="popular-badge">🔥 Popular</span>' : ''}
+                ${specialBadge}
+                ${outOfStockBadge}
                 <img src="${item.image}" alt="${item.name}">
                 <h3>${item.name}</h3>
                 <p>₹${item.price}</p>
                 <span class="delivery-time">⚡ 15-20 mins</span>
-                <button onclick="addToCart('${item.name}', ${item.price})">
-                    Add To Cart
+                <button onclick="addToCart('${item.name}', ${item.price})" ${outOfStock ? 'disabled' : ''}>
+                    ${outOfStock ? 'Out of Stock' : 'Add To Cart'}
                 </button>
             </div>
         `;
@@ -517,25 +585,16 @@ function closeSuccessModal() {
 }
 
 /* ===============================
-   PWA SERVICE WORKER - DISABLED FOR PRODUCTION
+   PWA SERVICE WORKER - DISABLED
 =================================*/
 
-// Only register service worker in development (localhost)
-if ('serviceWorker' in navigator && window.location.hostname === 'localhost') {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                console.log('✅ Service Worker registered:', registration.scope);
-            })
-            .catch(error => {
-                console.log('❌ Service Worker registration failed:', error);
-            });
-    });
-} else if ('serviceWorker' in navigator) {
-    // Unregister service worker on production
+// Service Worker disabled to prevent caching issues
+if ('serviceWorker' in navigator) {
+    // Unregister any existing service workers
     navigator.serviceWorker.getRegistrations().then(function(registrations) {
         for(let registration of registrations) {
             registration.unregister();
+            console.log('✅ Service Worker unregistered');
         }
     });
 }
