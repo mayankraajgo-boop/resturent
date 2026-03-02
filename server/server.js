@@ -10,6 +10,8 @@ const cors = require("cors");
 const path = require("path");
 const multer = require("multer");
 const Razorpay = require("razorpay");
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 const app = express();
 
@@ -105,17 +107,26 @@ const Order = mongoose.model("Order", OrderSchema);
 
 
 /* =====================================================
-   FILE UPLOAD (MULTER)
+   CLOUDINARY CONFIGURATION
 ===================================================== */
 
-const uploadPath = path.join(__dirname, "../client/uploads");
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, uploadPath);
-    },
-    filename: function (req, file, cb) {
-        cb(null, Date.now() + "-" + file.originalname);
+
+/* =====================================================
+   FILE UPLOAD (CLOUDINARY)
+===================================================== */
+
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'mr-restaurant',
+        allowed_formats: ['jpg', 'jpeg', 'png', 'webp', 'avif'],
+        transformation: [{ width: 500, height: 500, crop: 'limit' }]
     }
 });
 
@@ -157,7 +168,7 @@ app.post("/add-item", upload.single("image"), async (req, res) => {
             name: req.body.name,
             price: req.body.price,
             category: req.body.category,
-            image: "/uploads/" + req.file.filename
+            image: req.file.path // Cloudinary URL
         });
 
         await item.save();
@@ -187,7 +198,7 @@ app.put("/update-item/:id", upload.single("image"), async (req, res) => {
         };
 
         if (req.file) {
-            updateData.image = "/uploads/" + req.file.filename;
+            updateData.image = req.file.path; // Cloudinary URL
         }
 
         await Item.findByIdAndUpdate(req.params.id, updateData);
