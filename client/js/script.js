@@ -517,20 +517,11 @@ function closeSuccessModal() {
 }
 
 /* ===============================
-   PWA SERVICE WORKER - FULL SUPPORT
+   PWA SERVICE WORKER - DISABLED FOR PRODUCTION
 =================================*/
 
-let deferredPrompt;
-let isInstalled = false;
-
-// Check if app is already installed
-if (window.matchMedia('(display-mode: standalone)').matches) {
-    isInstalled = true;
-    console.log('PWA is installed');
-}
-
-// Register Service Worker
-if ('serviceWorker' in navigator) {
+// Only register service worker in development (localhost)
+if ('serviceWorker' in navigator && window.location.hostname === 'localhost') {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
             .then(registration => {
@@ -540,36 +531,22 @@ if ('serviceWorker' in navigator) {
                 console.log('❌ Service Worker registration failed:', error);
             });
     });
+} else if ('serviceWorker' in navigator) {
+    // Unregister service worker on production
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+        for(let registration of registrations) {
+            registration.unregister();
+        }
+    });
 }
+
+let deferredPrompt;
 
 // Capture the install prompt event
 window.addEventListener('beforeinstallprompt', (e) => {
     console.log('PWA install prompt available');
     e.preventDefault();
     deferredPrompt = e;
-    
-    // Show install button if not already installed
-    if (!isInstalled) {
-        const installBtn = document.querySelector('.install-app-btn');
-        if (installBtn) {
-            installBtn.style.display = 'block';
-        }
-    }
-});
-
-// Handle successful installation
-window.addEventListener('appinstalled', () => {
-    console.log('✅ PWA installed successfully');
-    isInstalled = true;
-    deferredPrompt = null;
-    
-    // Hide install button
-    const installBtn = document.querySelector('.install-app-btn');
-    if (installBtn) {
-        installBtn.style.display = 'none';
-    }
-    
-    alert('🎉 App installed successfully! You can now use it offline.');
 });
 
 // Install PWA function
